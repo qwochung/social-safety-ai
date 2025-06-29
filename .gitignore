@@ -1,2 +1,6 @@
-model/
 .venv/
+model/
+__pycache__/
+*.pyc
+.DS_Store
+detech-violen-image/RLVS_Dataset/
