@@ -3,28 +3,38 @@ from app.services.model_loader import model_image, device
 from app.utils.transforms import transform
 from app.utils.helpers import custom_response
 from app.core.violation_types import ViolationType
+from typing import List
 from PIL import Image
-import torch, io
-
+import io
+import torch
+import torch.nn.functional as F
 router = APIRouter()
 
 @router.post("/predict/image")
-async def predict_image(file: UploadFile = File(...)):
+async def predict_image(files: List[UploadFile] = File(...)):
     try:
-        image = Image.open(io.BytesIO(await file.read())).convert("RGB")
-        img_tensor = transform(image).unsqueeze(0).to(device)
+        results = []
 
-        with torch.no_grad():
-            outputs = model_image(img_tensor)
-            probs = torch.nn.functional.softmax(outputs, dim=1)
-            confidence, predicted_class = torch.max(probs, 1)
+        for file in files:
+            # Đọc và xử lý ảnh
+            image = Image.open(io.BytesIO(await file.read())).convert("RGB")
+            img_tensor = transform(image).unsqueeze(0).to(device)
 
-        return custom_response(200, "Success", {
-            "filename": file.filename,
-            "violation_type": ViolationType.BLOOD,
-            "violation_detected": int(predicted_class.item()),
-            "confidence": float(confidence.item())
-        })
+            # Dự đoán
+            with torch.no_grad():
+                outputs = model_image(img_tensor)
+                probs = F.softmax(outputs, dim=1)
+                confidence, predicted_class = torch.max(probs, 1)
+
+            # Ghi kết quả từng ảnh
+            results.append({
+                "filename": file.filename,
+                "violation_type": ViolationType.BLOOD,
+                "violation_detected": int(predicted_class.item()),
+                "confidence": float(confidence.item())
+            })
+
+        return custom_response(200, "Success", data=results)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
