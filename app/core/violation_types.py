@@ -1,5 +1,5 @@
 class ViolationType:
-    BLOOD = "blood"
+    BLOOD = "BLOOD"
     ADULT_CONTENT = "18+"
-    VIOLENCE = "violence"
-    NUDITY = "nudity"
+    VIOLENCE = "VIOLENCE"
+    NUDITY = "NUDITY"

@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from app.models.schemas import TextRequest
 from app.utils.helpers import clean_text, custom_response
 from app.services.model_loader import tokenizer, model_bert, device
+from app.core.violation_types import ViolationType
 import torch
 
 router = APIRouter()
@@ -24,7 +25,7 @@ async def predict_content(request: TextRequest):
         code=200,
         message="Success",
         data={
-            "violation_type": "toxic_content",
+            "violation_type": ViolationType.VIOLENCE,
             "violation_detected": int(prediction.item()),  # 1 = TOXIC, 0 = NON-TOXIC
             "confidence": float(confidence.item()),
         }
