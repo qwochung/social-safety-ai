@@ -24,14 +24,16 @@ async def predict_image(files: List[UploadFile] = File(...)):
             with torch.no_grad():
                 outputs = model_image(img_tensor)
                 probs = F.softmax(outputs, dim=1)
-                confidence, predicted_class = torch.max(probs, 1)
+                predicted_class = torch.argmax(probs, dim=1).item()
+                confidence = probs[0][predicted_class].item()
 
             # Ghi kết quả từng ảnh
             results.append({
                 "filename": file.filename,
                 "violation_type": ViolationType.BLOOD,
-                "violation_detected": int(predicted_class.item()),
-                "confidence": float(confidence.item())
+                "violation_detected": predicted_class,
+                "confidence": round(confidence, 4)
+
             })
 
         return custom_response(200, "Success", data=results)
