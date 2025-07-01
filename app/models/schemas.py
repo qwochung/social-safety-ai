@@ -1,4 +1,7 @@
 from pydantic import BaseModel
 
 class TextRequest(BaseModel):
-    text: str
+    content: str
+
+class ImageUrlRequest(BaseModel):
+    url: str
